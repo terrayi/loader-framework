@@ -1,0 +1,16 @@
+16th July 2011
+
+Loader Framework by t3RRa
+
+license: 2-clause BSD
+
+Please refer to example/ directory for how-to.
+
+For UAC dialog to get Administrator privilege, you might want to add specific
+manifest file into the executable. Please refer to the included manifest file
+(manifest.example) to see what is expected to be inserted into the manifest.
+To know how to inject the manifest, please search MSDN or other websites.
+
+Thank you.
+t3RRa
+

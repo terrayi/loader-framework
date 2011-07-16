@@ -1,0 +1,6 @@
+
+#include "resource.h"
+
+ID_APPICON ICON DISCARDABLE "akane.ico"
+ID_SPLASH BITMAP "splash.bmp"
+
