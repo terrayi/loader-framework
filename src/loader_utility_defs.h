@@ -11,7 +11,7 @@
 
 #include <windows.h>
 
-#ifndef _MSC_VER
+#ifdef __MINGW32__
 
 #ifndef _LOADER_UTILITY_DEFS_H
 #define _LOADER_UTILITY_DEFS_H

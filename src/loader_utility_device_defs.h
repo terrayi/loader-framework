@@ -13,26 +13,30 @@
 #define DFP_GET_VERSION         0x00074080
 #define DFP_SEND_DRIVE_COMMAND  0x0007c084
 #define DFP_RECEIVE_DRIVE_DATA  0x0007c088
-#define SERIAL_NUMBER_LENGTH    20
+
+#ifndef SERIAL_NUMBER_LENGTH
+#define SERIAL_NUMBER_LENGTH    32
+#endif
 
 #pragma pack(1)
+#ifdef __MINGW32__
 typedef struct
 {
-	char Features;
-	char SectorCount;
-	char SectorNumber;
-	char CylinderLow;
-	char CylinderHight;
-	char DriveHead;
-	char Command;
-	char Reserved;
+	char bFeaturesReg;
+	char bSectorCountReg;
+	char bSectorNumberReg;
+	char bCylLowReg;
+	char bCylHightReg;
+	char bDriveHeadReg;
+	char bCommandReg;
+	char bReserved;
 } IDEREGS;
 
 typedef struct
 {
-	int BufferSize;
-	IDEREGS DriveRegs;
-	char DriveNumber;
+	int cBufferSize;
+	IDEREGS irDriveRegs;
+	char bDriveNumber;
 	char reserved[3];
 	int reserved2[4];
 } SENDCMDINPARAMS;
@@ -44,6 +48,7 @@ typedef struct
 	char Reserved1[2];
 	int Reserverd2[2];
 } DRIVERSTATUS;
+#endif
 
 typedef struct
 {
@@ -85,6 +90,7 @@ typedef struct
 	int BufferSize;
 	DRIVERSTATUS Status;
 	IDSECTOR IDS;
-} SENDCMDOUTPARAMS;
+} customSENDCMDOUTPARAMS;
 #pragma pack()
 
+//EOF

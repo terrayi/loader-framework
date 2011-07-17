@@ -123,7 +123,7 @@ Utility::getDiskSerial(char *path, char** serial)
 	DWORD length = 0;
 
 	SENDCMDINPARAMS sci;
-	SENDCMDOUTPARAMS sco;
+	customSENDCMDOUTPARAMS sco;
 
 	handle = ::CreateFile(
 			path,
@@ -142,12 +142,12 @@ Utility::getDiskSerial(char *path, char** serial)
 	::ZeroMemory(&sci, sizeof(sci));
 	::ZeroMemory(&sco, sizeof(sco));
 
-	sci.DriveNumber = 0;
-	sci.BufferSize = sizeof(sco);
-	sci.DriveRegs.DriveHead = 0xa0;
-	sci.DriveRegs.Command = 0xec;
-	sci.DriveRegs.SectorCount = 1;
-	sci.DriveRegs.SectorNumber = 1;
+	sci.bDriveNumber = 0;
+	sci.cBufferSize = sizeof(sco);
+	sci.irDriveRegs.bDriveHeadReg = 0xa0;
+	sci.irDriveRegs.bCommandReg = 0xec;
+	sci.irDriveRegs.bSectorCountReg = 1;
+	sci.irDriveRegs.bSectorNumberReg = 1;
 
 	result = ::DeviceIoControl(
 			handle,

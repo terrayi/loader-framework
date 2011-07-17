@@ -11,6 +11,8 @@
 
 //#define DEBUG_MODE 1
 
+#pragma comment(lib, "winmm.lib")
+
 #include "loader.h"
 #include "loader_splash.h"
 #include "_begin.h"
