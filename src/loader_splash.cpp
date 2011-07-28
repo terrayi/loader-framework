@@ -11,7 +11,9 @@
 
 //#define DEBUG_MODE 1
 
+#ifndef __MINGW32__
 #pragma comment(lib, "winmm.lib")
+#endif
 
 #include "loader.h"
 #include "loader_splash.h"

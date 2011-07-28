@@ -56,7 +56,11 @@ enum ENGINE_ERROR_CODE
 	PROTECTION_CHANGE_ERROR, // VirtualProtectEx() failed
 	MEMORY_WRITE_ERROR, // WriteProcessMemory() failed
 	PATCH_CHECK_ERROR,
-	UNKNOWN_ERROR
+	MEMORY_ALLOCATION_ERROR,
+	MODULE_HANDLE_RETRIEVE_ERROR,
+	MEMORY_WRITE_DLL_ERROR,
+	GET_PROC_ADDRESS_ERROR,
+	REMOTE_THREAD_CREATION_ERROR
 };
 
 class Application;
@@ -65,6 +69,7 @@ class Engine
 {
 protected:
 	std::vector<patchData*> patch_data;
+	std::vector<char*> dll;
 	char *target_executable;
 
 	MEMORY_BASIC_INFORMATION mbi;
@@ -85,7 +90,10 @@ public:
 	HANDLE getTargetProcess(void);
 	DWORD getTargetProcessId(void);
 	void addPatch(DWORD address, int size, uchar *original, uchar *data);
-	void loadPatchDataFromArray(uchar *array_data);
+#ifdef NEED_DLL_INJECTION
+	void addDll(char *path);
+	int injectDll(char *path, bool wait = true);
+#endif
 	int run(Application *application);
 	void terminate(void);
 };

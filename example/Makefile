@@ -1,10 +1,13 @@
-#PREFIX = i386-mingw32-
+PREFIX = i386-mingw32-
 RES = ${PREFIX}windres
 ROP = --use-temp-file --define NOPCH
 CC = ${PREFIX}gcc
 COP = -DHAVE_W32API_H -Wl,--subsystem,windows
 COP+= -mwindows -lwinmm -ladvapi32 -lstdc++
 STRIP = ${PREFIX}strip -s
+DEFS = -DNEED_DLL_INJECTION
+#RM = del
+RM = rm
 TARGET = ExampleLoader.exe
 SRC = \
 	../src/loader_splash.cpp \
@@ -16,9 +19,12 @@ SRC = \
 	rc.o
 
 all: $(SRC)
-	$(CC) -Wall -o $(TARGET) $(SRC) $(COP)
+	$(CC) -Wall -o $(TARGET) $(SRC) $(COP) $(DEFS)
 	$(STRIP) $(TARGET)
 
 rc.o: loader.rc
 	$(RES) $(ROP) -iloader.rc -o $@
+
+clean:
+	$(RM) rc.o
 

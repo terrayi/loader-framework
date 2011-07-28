@@ -10,7 +10,7 @@
  */
 
 //#define DEBUG_MODE 1
-
+//#define NEED_DLL_INJECTION 1
 #include "loader_application.h"
 #include "loader_engine.h"
 #include "_begin.h"
@@ -20,13 +20,18 @@ Engine::Engine()
 	target_executable = 0;
 	//create_mode = CREATE_SUSPENDED|DEBUG_PROCESS|DEBUG_ONLY_THIS_PROCESS;
 	create_mode = CREATE_SUSPENDED;
-	access_mode = PROCESS_ALL_ACCESS;
+	//access_mode = PROCESS_ALL_ACCESS;
+	access_mode = MAXIMUM_ALLOWED;
 	running = false;
 }
 
 Engine::~Engine()
 {
 	patch_data.clear();
+
+	#ifdef NEED_DLL_INJECTION
+		dll.clear();
+	#endif
 
 	if (target_executable)
 	{
@@ -101,14 +106,93 @@ Engine::addPatch(DWORD address, int size, uchar *original, uchar *data)
 	patch_data.push_back(new_data);
 }
 
-/*
-void Engine:: loadPatchDataFromArray(unsigned char*)
-*/
+#ifdef NEED_DLL_INJECTION
+void
+Engine::addDll(char* path)
+{
+	dll.push_back(path);
+}
+
+int
+Engine::injectDll(char *path, bool wait)
+{
+	HANDLE thread_handle = NULL;
+	HMODULE module = NULL;
+	LPVOID remote_buffer = NULL;
+	LPTHREAD_START_ROUTINE thread_proc = NULL;
+	BOOL result = FALSE;
+
+	remote_buffer = ::VirtualAllocEx(
+				handle,
+				NULL,
+				strlen(path),
+				MEM_COMMIT | MEM_RESERVE,
+				PAGE_READWRITE);
+
+	if (remote_buffer == NULL)
+	{
+		return MEMORY_ALLOCATION_ERROR;
+	}
+
+	result = ::WriteProcessMemory(
+			handle,
+			remote_buffer,
+			path,
+			strlen(path),
+			NULL);
+
+	if (result == 0)
+	{
+		return MEMORY_WRITE_DLL_ERROR;
+	}
+
+	module = ::GetModuleHandle("kernel32.dll");
+
+	if (module == NULL)
+	{
+		return MODULE_HANDLE_RETRIEVE_ERROR;
+	}
+
+	thread_proc = (LPTHREAD_START_ROUTINE)
+			::GetProcAddress(module, "LoadLibraryA");
+
+	if (thread_proc == NULL)
+	{
+		return GET_PROC_ADDRESS_ERROR;
+	}
+
+	thread_handle = ::CreateRemoteThread(
+				handle,
+				NULL,
+				0,
+				thread_proc,
+				remote_buffer,
+				0,
+				NULL);
+
+	if (thread_handle == NULL)
+	{
+		return REMOTE_THREAD_CREATION_ERROR;
+	}
+
+	if (wait)
+	{
+		::WaitForSingleObject(thread_handle, INFINITE);
+	}
+
+	return 0;
+}
+#endif
 
 int
 Engine::run(Application *application)
 {
 	std::vector<patchData*>::iterator iter;
+
+	#ifdef NEED_DLL_INJECTION
+	std::vector<char*>::iterator iterd;
+	#endif
+
 	BOOL result = FALSE;
 	int error_code = 0;
 
@@ -174,6 +258,20 @@ Engine::run(Application *application)
 
 	DEBUG("process afterPatching..\n");
 	application->afterPatching(this);
+
+	#ifdef NEED_DLL_INJECTION
+	// INJECT DLLs
+	if (dll.size() > 0)
+	for (iterd = dll.begin(); iterd < dll.end(); iterd++)
+	{
+		result = injectDll(*iterd);
+
+		if (result != NO_ENGINE_ERROR)
+		{
+			//DEBUG();
+		}
+	}
+	#endif
 
 	// RUN AND WAIT
 	DEBUG("Resuming the patched executable thread on %d in %s\n",

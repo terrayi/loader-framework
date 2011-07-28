@@ -18,6 +18,8 @@ MyLoader::~MyLoader()
 {
 }
 
+// called before anything else in the beginning.
+// load splash and/or do task related to protection scheme etc.
 int
 MyLoader::onStartUp(Loader::Engine *e)
 {
@@ -63,6 +65,7 @@ MyLoader::onStartUp(Loader::Engine *e)
 	return 0;
 }
 
+// called before patching in memory happens. add patch data here
 int
 MyLoader::beforePatching(Loader::Engine *e)
 {
@@ -84,12 +87,25 @@ MyLoader::beforePatching(Loader::Engine *e)
 	return 0;
 }
 
+// called when the target application is patched in memory
 int
 MyLoader::afterPatching(Loader::Engine *e)
+{
+	//e->injectDll("..."); in here or afterRunning() only
+	// or
+	//e->addDll("..."); in onStartUp(), beforePatching() or here only
+	return 0;
+}
+
+// called after the target application is started
+// DO not try to run intensive tasks here
+int
+MyLoader::afterRunning(Loader::Engine *e)
 {
 	return 0;
 }
 
+// called when the target application is closed
 int
 MyLoader::onClose(Loader::Engine *e)
 {
@@ -97,6 +113,7 @@ MyLoader::onClose(Loader::Engine *e)
 	return 0;
 }
 
+// called when an error occurs during running(including patching)
 int
 MyLoader::onError(int code, bool critical)
 {
